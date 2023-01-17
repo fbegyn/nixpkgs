@@ -2,6 +2,7 @@
 , stdenv
 , fetchFromGitHub
 , fetchurl
+, curl
 , gnome2
 , gst_all_1
 , gtk3
@@ -63,6 +64,7 @@ stdenv.mkDerivation rec {
     libXxf86vm
     xorgproto
   ]
+  ++ lib.optional withCurl curl
   ++ lib.optional withMesa libGLU
   ++ lib.optional (withWebKit && !stdenv.isDarwin) webkitgtk
   ++ lib.optional (withWebKit && stdenv.isDarwin) WebKit
