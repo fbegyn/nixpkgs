@@ -27097,6 +27097,7 @@ with pkgs;
   promql-cli = callPackage ../tools/misc/promql-cli { };
 
   prom2json = callPackage ../servers/monitoring/prometheus/prom2json.nix { };
+  perses = callPackage ../servers/monitoring/perses { };
   prometheus = callPackage ../servers/monitoring/prometheus { };
   prometheus-alertmanager = callPackage ../servers/monitoring/prometheus/alertmanager.nix { };
   prometheus-apcupsd-exporter = callPackage ../servers/monitoring/prometheus/apcupsd-exporter.nix { };
