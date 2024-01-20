@@ -2,13 +2,16 @@
 , lib
 , go
 , buildGoModule
+, buildNpmPackage
 , fetchFromGitHub
 , fetchurl
+, fetchNpmDeps
 , nixosTests
 , nodejs
 , git
 , turbo
 , jq
+, npmHooks
 }:
 
 let
@@ -17,9 +20,6 @@ in
 buildGoModule rec {
   pname = "perses";
   inherit version;
-
-  outputs = [ "out" "doc" "cli" ];
-
   src = fetchFromGitHub {
     owner = "perses";
     repo = "perses";
@@ -29,32 +29,41 @@ buildGoModule rec {
 
   vendorHash = "sha256-mwVBF2LBM4pLgCxgGCgwwuaN8yyr9hrna/IjDciOan4=";
 
-  excludedPackages = [ ];
+  outputs = [ "out" "doc" "cli" ];
 
   nativeBuildInputs = [
     nodejs
     turbo
-    git
     jq
+    npmHooks.npmConfigHook
+    git
   ];
 
-  postPatch = ''
-  '';
+  npmDeps = fetchNpmDeps {
+    src = "${src}/ui";
+    hash = "sha256-PcvqRrydiATrc7ZH5QtyIoC8N8759PWc6cONhB2bMF8=";
+  };
+  npmRoot = "ui";
+
+  NODE_PATH = "${npmDeps}";
+  PATH = "${npmDeps}/bin:$PATH";
+  PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = "1";
 
   preBuild = ''
   '';
 
   buildPhase = ''
-    make build
-  '';
+    make -j$NIX_BUILD_CORES build-ui
+    cd /build/source
+    make -j$NIX_BUILD_CORES build-api
+    make -j$NIX_BUILD_CORES build-cli
 
-  tags = [ ];
+  '';
 
   ldflags =
     let
-      t = "github.com/perses/perses";
-    in
-    [
+      t = "github.com/prometheus/common/version";
+    in [
       "-s"
       "-w"
       "-X ${t}.Version=${version}"
